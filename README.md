@@ -7,7 +7,7 @@ Proxmox Backup Server Wrapper Script for proxmox-backup-client
 1) download proxmox backup wrapper:<br>
 <code>wget https://raw.githubusercontent.com/adminforge/pbs-wrapper/master/pbs</code>
 2) install: <code>sudo bash pbs install</code>
-3) edit <code>/etc/.pbs.config</code> and choose repository type and set credentials (see Docs)
+3) edit <code>/etc/.pbs.config</code> and choose PBS_REPOSITORY, PBS_PASSWORD and PBS_FINGERPRINT
 4) a daily backup will run every day between 0-5am
 
 ## Usage
