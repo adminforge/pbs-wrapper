@@ -44,7 +44,7 @@ End Time: Thu Feb 20 10:41:12 2025
 └────────────────────────────────┴───────────┴────────────────────────────────────┘
 </pre>
 
-### restore complete backup
+### restore complete backup to RESTOREFOLDER="/tmp"
 <pre>
 # pbs restore host/pve1/2025-02-20T07:42:56Z root.pxar
 </pre>
