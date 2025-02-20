@@ -22,6 +22,10 @@ install_pbs() {
     $(which wget) -O /etc/apt/trusted.gpg.d/proxmox-release-$DEBIAN_VERSION.gpg http://download.proxmox.com/debian/proxmox-release-$DEBIAN_VERSION.gpg
     apt update && apt install -y proxmox-backup-client
     fi
+    if ! [ -f $ENCRYPTION ]; then
+    echo "create encryption key ..."
+    $PBS key create $ENCRYPTION --kdf none
+    fi
 }
 
 install_systemd() {
@@ -67,15 +71,15 @@ fi
 case "$1" in
 
   run)
-    $PBS backup $ENCRYPTION $SOURCEDIRS $INCLUDE
+    $PBS backup --keyfile $ENCRYPTION $SOURCEDIRS $INCLUDE
   ;;
 
   restore)
-    $PBS restore $ENCRYPTION $2 $3 $RESTOREFOLDER/restore-$(date +"%Y-%m-%d_%H%M")
+    $PBS restore --keyfile $ENCRYPTION $2 $3 $RESTOREFOLDER/restore-$(date +"%Y-%m-%d_%H%M")
   ;;
 
   mount)
-    $PBS mount $ENCRYPTION $2 $3 $4
+    $PBS mount --keyfile $ENCRYPTION $2 $3 $4
   ;;
 
   install)
