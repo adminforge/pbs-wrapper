@@ -12,7 +12,7 @@ PBS=$(which proxmox-backup-client)
 
 install_pbs() {
     if ! [ -f /etc/.pbs.config ]; then
-    echo "downloading .restic.config ..."
+    echo "downloading .pbs.config ..."
     $(which wget) --quiet https://raw.githubusercontent.com/adminforge/pbs-wrapper/master/etc/.pbs.config -O /etc/.pbs.config
     fi
     if ! [ -f /etc/apt/sources.list.d/proxmox.list ]; then
