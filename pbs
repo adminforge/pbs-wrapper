@@ -22,6 +22,7 @@ install_pbs() {
     $(which wget) -O /etc/apt/trusted.gpg.d/proxmox-release-$DEBIAN_VERSION.gpg http://download.proxmox.com/debian/proxmox-release-$DEBIAN_VERSION.gpg
     apt update && apt install -y proxmox-backup-client
     fi
+    source /etc/.pbs.config
     if ! [ -f $ENCRYPTION ]; then
     echo "create encryption key ..."
     $PBS key create $ENCRYPTION --kdf none
