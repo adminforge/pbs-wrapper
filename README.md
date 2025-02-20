@@ -6,11 +6,13 @@ Documentation: https://pbs.proxmox.com/docs/backup-client.html
 ## Install
 ### Debian
 
-1) download proxmox backup wrapper:<br>
+1) first create an api token in Proxmox Backup Server > Configuration > Access Control > Api Token > Add
+2) assign api token and role DatastoreBackup under Datastore > Permissions > Add > API Token Permission
+3) download proxmox backup wrapper:<br>
 <code>wget https://raw.githubusercontent.com/adminforge/pbs-wrapper/master/pbs</code>
-2) install: <code>sudo bash pbs install</code>
-3) edit <code>/etc/.pbs.config</code> and choose PBS_REPOSITORY, PBS_PASSWORD and PBS_FINGERPRINT
-4) a daily backup will run every day between 0-5am
+4) install: <code>sudo bash pbs install</code>
+5) edit <code>/etc/.pbs.config</code> and choose PBS_REPOSITORY, PBS_PASSWORD and PBS_FINGERPRINT
+6) a daily backup will run every day between 0-5am
 
 ## Usage
 You can run <code>pbs -h</code> to list wrapper help or <code>pbs</code> to list proxmox-backup-client original help. <p>
