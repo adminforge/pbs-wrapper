@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# read configuration
+source /etc/.pbs.config
+
+##############################################
+### DO NOT CHANGE ANYTHING BELOW THIS LINE ###
+##############################################
+
+# pbs client binary
+PBS=$(which proxmox-backup-client)
+
+install_pbs() {
+    if ! [ -f /etc/.pbs.config ]; then
+    echo "downloading .restic.config ..."
+    $(which wget) --quiet https://raw.githubusercontent.com/adminforge/pbs-wrapper/master/etc/.pbs.config -O /etc/.pbs.config
+    fi
+    if ! [ -f /etc/apt/sources.list.d/proxmox.list ]; then
+    echo "add proxmox repo and install proxmox-backup-client ..."
+    DEBIAN_VERSION=$(hostnamectl | grep "Operating System" | cut -d: -f2 | awk '{print $NF}' | tr -d '()' | tr '[:upper:]' '[:lower:]')
+    echo "deb http://download.proxmox.com/debian/pve $DEBIAN_VERSION pve-no-subscription" > /etc/apt/sources.list.d/proxmox.list
+    $(which wget) -O /etc/apt/trusted.gpg.d/proxmox-release-$DEBIAN_VERSION.gpg http://download.proxmox.com/debian/proxmox-release-$DEBIAN_VERSION.gpg
+    apt update && apt install -y proxmox-backup-client
+    fi
+}
+
+install_systemd() {
+cat <<EOF > /etc/systemd/system/pbs.timer
+[Unit]
+Description=Daily Proxmox Backup Timer
+
+[Timer]
+OnCalendar=*-*-* 00:00:00
+RandomizedDelaySec=18000
+Persistent=True
+
+[Install]
+WantedBy=timers.target
+EOF
+
+cat <<EOF > /etc/systemd/system/pbs.service
+[Unit]
+Description=Daily Proxmox Backup
+
+[Service]
+Type=oneshot
+Nice=10
+ExecStart=/usr/local/bin/pbs run
+Environment="HOME=/root"
+EOF
+
+systemctl daemon-reload
+systemctl start pbs.timer >/dev/null 2>&1
+systemctl enable pbs.timer >/dev/null 2>&1
+}
+
+move_script() {
+CURRENTPWD=$(pwd)
+if ! [ -f /usr/local/bin/${0##*/} ]; then
+    chmod +x $CURRENTPWD/${0##*/}; mv -v $CURRENTPWD/${0##*/} /usr/local/bin/
+else
+    echo "proxmox backup wrapper already installed!"
+    exit
+fi
+}
+
+case "$1" in
+
+  run)
+    $PBS backup $ENCRYPTION $SOURCEDIRS $INCLUDE
+  ;;
+
+  restore)
+    $PBS restore $ENCRYPTION $2 $3 $RESTOREFOLDER/restore-$(date +"%Y-%m-%d_%H%M")
+  ;;
+
+  mount)
+    $PBS mount $ENCRYPTION $2 $3 $4
+  ;;
+
+  install)
+    if [ $(grep -E "Debian" /etc/*-release | wc -l) -ge 1 ]; then
+     echo "install on debian linux ..."
+     move_script
+     apt-get update && apt-get -y install vim wget
+     install_pbs
+     install_systemd
+    else
+     echo "EXIT - no debian detected !"
+     exit 1
+    fi
+  ;;
+  
+  update)
+    $(which wget) --quiet https://raw.githubusercontent.com/adminforge/pbs-wrapper/master/pbs -O /usr/local/bin/pbs
+  ;;
+  
+  edit)
+    $(which vim) /etc/.pbs.config
+  ;;
+
+  -h|--help)
+cat <<EOF
+* proxmox backup wrapper v1.0 (c) adminForge.de 2025
+* Syntax: ${0##*/} {run|restore|restoresnap|install|update|edit|-h}
+* Examples:
+    list snapshots     : ${0##*/} snapshot list
+    run backup         : ${0##*/} run
+    restore snapshot   : ${0##*/} restore host/ceres/2025-02-20T07:42:56Z root.pxar
+    mount snapshot     : ${0##*/} mount host/ceres/2025-02-20T07:42:56Z root.pxar /mnt
+EOF
+    exit 1
+  ;;
+
+  *)
+    $PBS $@
+  ;;
+
+esac
