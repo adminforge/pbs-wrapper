@@ -1,6 +1,7 @@
 # pbs-wrapper
 Proxmox Backup Server Wrapper Script for proxmox-backup-client
-Doc: https://pbs.proxmox.com/docs/backup-client.html
+
+Documentation: https://pbs.proxmox.com/docs/backup-client.html
 
 ## Install
 ### Debian
